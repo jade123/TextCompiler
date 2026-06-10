@@ -1,74 +1,37 @@
 {
   "name": "text-reader",
   "version": "0.1.0",
-  "description": "A Chinese desktop text reader and code diff editor.",
-  "main": "./out/main/index.js",
+  "description": "A Chinese desktop text reader and code diff editor built with Tauri, React and Vite.",
   "type": "module",
   "author": "文本阅读器",
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "electron-vite dev",
-    "build": "tsc --noEmit && electron-vite build",
-    "pack:mac:universal": "npm run build && electron-builder --mac dir --universal",
-    "dist:mac:universal": "npm run build && electron-builder --mac dmg zip --universal",
-    "dist:win": "npm run build && electron-builder --win nsis zip --x64",
-    "dist:all": "npm run build && electron-builder --mac dmg zip --universal --win nsis zip --x64",
-    "preview": "electron-vite preview",
+    "dev": "tauri dev",
+    "dev:frontend": "vite",
+    "build": "tsc --noEmit && vite build",
+    "dist": "tauri build",
+    "dist:mac:universal": "tauri build --target universal-apple-darwin",
+    "dist:win": "tauri build --target x86_64-pc-windows-msvc",
+    "preview": "vite preview --host 127.0.0.1 --port 1420",
     "test": "vitest run"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
+    "@tauri-apps/api": "^2.11.0",
     "lucide-react": "^0.468.0",
     "monaco-editor": "^0.52.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.11.2",
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
-    "electron": "^33.2.1",
-    "electron-builder": "^26.15.2",
-    "electron-vite": "^2.3.0",
     "typescript": "^5.7.2",
     "vite": "^5.4.11",
     "vitest": "^2.1.8"
-  },
-  "build": {
-    "appId": "com.jade.textreader",
-    "productName": "文本阅读器",
-    "files": [
-      "out/**/*",
-      "src/renderer/src/assets/support/**/*",
-      "build/icon.png"
-    ],
-    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
-    "directories": {
-      "buildResources": "build",
-      "output": "release"
-    },
-    "mac": {
-      "category": "public.app-category.developer-tools",
-      "icon": "build/icon.icns",
-      "target": [
-        "dmg",
-        "zip"
-      ],
-      "identity": null
-    },
-    "win": {
-      "icon": "build/icon.ico",
-      "target": [
-        "nsis",
-        "zip"
-      ]
-    },
-    "linux": {
-      "icon": "build/icon.png",
-      "target": "AppImage",
-      "category": "Development"
-    }
   }
 }

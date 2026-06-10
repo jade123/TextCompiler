@@ -1,4 +1,5 @@
 import { DiffEditor, Editor, type DiffOnMount } from '@monaco-editor/react';
+import { listen } from '@tauri-apps/api/event';
 import {
   ArrowLeftRight,
   Code2,
@@ -16,6 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppFile, DiffSession } from '../../shared/types';
 import { getLanguageLabel, getMonacoLanguage, LANGUAGE_MODES } from '../../shared/languages';
 import tipCodeUrl from './assets/support/wechat-tip.jpg';
+import { desktop } from './desktop';
 import {
   createUntitledFile,
   detectLanguage,
@@ -75,9 +77,59 @@ export function App(): JSX.Element {
     return resolved;
   }, [files]);
 
+  useEffect(() => {
+    let disposed = false;
+    let unlisten: (() => void) | null = null;
+
+    listen<{ paths?: string[] } | string[]>('tauri://drag-drop', async (event) => {
+      const filePaths = Array.isArray(event.payload) ? event.payload : event.payload.paths ?? [];
+
+      if (disposed || filePaths.length === 0) {
+        return;
+      }
+
+      try {
+        const opened = await desktop.readDroppedFiles(filePaths);
+        const accepted = appendFiles(opened);
+
+        if (accepted.length >= 2) {
+          setDiffSession({
+            leftFileId: accepted[0].id,
+            rightFileId: accepted[1].id,
+            leftTitle: accepted[0].name,
+            rightTitle: accepted[1].name
+          });
+          setActiveFileId(accepted[1].id);
+          setViewMode('diff');
+          setMessage('已用差异对比打开拖入的文件');
+          return;
+        }
+
+        if (accepted[0]) {
+          setActiveFileId(accepted[0].id);
+          setViewMode('editor');
+          setMessage(`已打开 ${accepted[0].name}`);
+        }
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : '无法读取拖入的文件');
+      }
+    })
+      .then((handler) => {
+        unlisten = handler;
+      })
+      .catch(() => {
+        setMessage('拖拽监听初始化失败');
+      });
+
+    return () => {
+      disposed = true;
+      unlisten?.();
+    };
+  }, [appendFiles]);
+
   const openFiles = useCallback(async () => {
     try {
-      const opened = await window.desktop.openFiles();
+      const opened = await desktop.openFiles();
       const accepted = appendFiles(opened);
       if (accepted[0]) {
         setActiveFileId(accepted[0].id);
@@ -106,13 +158,13 @@ export function App(): JSX.Element {
 
       try {
         if (file.path) {
-          await window.desktop.saveFile(file.path, file.content);
+          await desktop.saveFile(file.path, file.content);
           setFiles((current) => markFileSaved(current, file.id, file.content));
           setMessage(`已保存 ${file.name}`);
           return;
         }
 
-        const saved = await window.desktop.saveFileAs(file.name, file.content);
+        const saved = await desktop.saveFileAs(file.name, file.content);
         if (!saved) {
           setMessage('已取消保存');
           return;
@@ -197,37 +249,9 @@ export function App(): JSX.Element {
       event.preventDefault();
       setIsDragging(false);
 
-      const droppedFiles = Array.from(event.dataTransfer.files);
-      if (droppedFiles.length === 0) {
-        return;
-      }
-
-      try {
-        const opened = await window.desktop.readDroppedFiles(droppedFiles);
-        const accepted = appendFiles(opened);
-        if (accepted.length >= 2) {
-          setDiffSession({
-            leftFileId: accepted[0].id,
-            rightFileId: accepted[1].id,
-            leftTitle: accepted[0].name,
-            rightTitle: accepted[1].name
-          });
-          setActiveFileId(accepted[1].id);
-          setViewMode('diff');
-          setMessage('已用差异对比打开拖入的文件');
-          return;
-        }
-
-        if (accepted[0]) {
-          setActiveFileId(accepted[0].id);
-          setViewMode('editor');
-          setMessage(`已打开 ${accepted[0].name}`);
-        }
-      } catch (error) {
-        setMessage(error instanceof Error ? error.message : '无法读取拖入的文件');
-      }
+      setMessage('正在读取拖入的文件');
     },
-    [appendFiles]
+    []
   );
 
   const diffMount: DiffOnMount = useCallback(

@@ -5,9 +5,11 @@
 ## 本地开发
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
+
+桌面壳已迁移为 Tauri，需要先安装 Rust 工具链。没有 `cargo` 时只能运行前端构建，不能生成桌面安装包。
 
 ## 验证
 
