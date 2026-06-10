@@ -83,14 +83,13 @@ src-tauri/target/x86_64-pc-windows-msvc/release/bundle/
 
 ```text
 nsis/文本阅读器_0.1.0_x64-setup.exe
-msi/文本阅读器_0.1.0_x64_en-US.msi
 ```
 
 说明：
 
 - `.exe` 是 NSIS 安装包。
-- `.msi` 是 Windows Installer 安装包。
-- 当前配置生成 Windows x64 版本。
+- 当前配置生成 Windows x64 的 NSIS `.exe` 安装包。
+- Windows 不再默认生成 `.msi`，避免 WiX `light.exe` 在部分环境中打包失败。
 - 不要使用 `npm install --omit=dev`，打包需要 TypeScript、Vite、Tauri CLI 等开发依赖。
 - 如需正式发布，建议配置 Windows 代码签名证书，避免 SmartScreen 提示。
 
@@ -148,3 +147,22 @@ macOS 打开提示不安全：
 Windows 提示未知发布者：
 
 当前是未签名本地构建，正式分发前需要配置代码签名证书。
+
+Windows 打包报 `failed to run ... WixTools314\light.exe`：
+
+这是 MSI/WiX 打包阶段失败。当前脚本已改为只生成 NSIS 安装包：
+
+```bash
+npm run dist:win
+```
+
+如果本地仍然触发 MSI，请确认 `package.json` 中 `dist:win` 包含 `--bundles nsis`，并删除旧构建目录后重试：
+
+```bash
+rmdir /s /q src-tauri\target
+npm run dist:win
+```
+
+在 macOS 上交叉打 Windows 包报 `NotAttempted("llvm-rc")`：
+
+这是 macOS 交叉编译 Windows 资源文件时缺少 `llvm-rc`，和 Windows 本机 `light.exe` 错误不是同一个问题。推荐在 Windows 机器上执行 `npm run dist:win`；如果一定要在 macOS 上交叉编译，需要额外安装 LLVM/llvm-rc。
