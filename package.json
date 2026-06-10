@@ -12,7 +12,8 @@
     "build": "tsc --noEmit && vite build",
     "dist": "tauri build",
     "dist:mac:universal": "tauri build --target universal-apple-darwin",
-    "dist:win": "tauri build --target x86_64-pc-windows-msvc --bundles nsis",
+    "dist:win": "tauri build --target x86_64-pc-windows-msvc --bundles nsis --config src-tauri/tauri.windows.conf.json",
+    "dist:win:nsis": "npm run dist:win",
     "preview": "vite preview --host 127.0.0.1 --port 1420",
     "test": "vitest run"
   },

@@ -73,6 +73,12 @@ npm run build
 npm run dist:win
 ```
 
+执行前可先确认脚本内容必须包含 `--bundles nsis`：
+
+```bash
+npm pkg get scripts.dist:win
+```
+
 输出目录：
 
 ```text
@@ -160,6 +166,13 @@ npm run dist:win
 
 ```bash
 rmdir /s /q src-tauri\target
+npm ci
+npm run dist:win
+```
+
+不要执行 `npm run dist` 来打 Windows 包；`npm run dist` 是通用打包入口，可能按默认 bundle 配置触发 MSI。Windows 只使用：
+
+```bash
 npm run dist:win
 ```
 
