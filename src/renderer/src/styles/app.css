@@ -1,0 +1,421 @@
+:root {
+  color: #e7e3db;
+  background: #151515;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.app-shell {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #151515;
+}
+
+.activity-bar {
+  display: flex;
+  flex: 0 0 50px;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 7px;
+  background: #202020;
+  border-right: 1px solid #303030;
+}
+
+.activity-bar button,
+.topbar-actions button,
+.quick-actions button,
+.diff-actions button,
+.welcome-actions button,
+.modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  border-radius: 6px;
+  background: #2b2b2b;
+}
+
+.activity-bar button {
+  width: 36px;
+  height: 36px;
+}
+
+.activity-bar button:hover,
+.activity-bar button:focus-visible,
+.topbar-actions button:hover,
+.quick-actions button:hover,
+.diff-actions button:hover,
+.welcome-actions button:hover,
+.tab:hover {
+  background: #3a3a3a;
+}
+
+.activity-spacer {
+  flex: 1;
+}
+
+.sidebar {
+  display: flex;
+  flex: 0 0 275px;
+  flex-direction: column;
+  min-width: 0;
+  background: #1b1b1b;
+  border-right: 1px solid #303030;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 48px;
+  padding: 0 14px;
+  border-bottom: 1px solid #303030;
+  color: #f2d169;
+  font-weight: 700;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px;
+}
+
+.quick-actions button,
+.welcome-actions button {
+  padding: 0 11px;
+}
+
+.panel-section {
+  padding: 8px 12px 14px;
+}
+
+.panel-title {
+  margin-bottom: 8px;
+  color: #9c958c;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.file-row {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 9px;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+}
+
+.file-row.active,
+.file-row:hover {
+  background: #2a2928;
+}
+
+.file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-meta {
+  color: #9c958c;
+  font-size: 12px;
+}
+
+.empty-note {
+  padding: 12px 8px;
+  color: #9c958c;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.panel-section label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+  color: #bdb7ad;
+  font-size: 13px;
+}
+
+select {
+  width: 100%;
+  height: 32px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  color: #e7e3db;
+  background: #242424;
+}
+
+.diff-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 38px;
+  gap: 7px;
+}
+
+.workspace {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  height: 44px;
+  border-bottom: 1px solid #303030;
+  background: #1f1f1f;
+}
+
+.tab-strip {
+  display: flex;
+  min-width: 0;
+  height: 100%;
+  overflow-x: auto;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 128px;
+  max-width: 220px;
+  height: 100%;
+  padding: 0 10px 0 12px;
+  border-right: 1px solid #303030;
+  background: #232323;
+  color: #cfc8bd;
+}
+
+.tab span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab.active {
+  background: #2d2b29;
+  color: #fff4db;
+  box-shadow: inset 0 -2px 0 #e0b942;
+}
+
+.tab.utility {
+  min-width: 42px;
+  max-width: 42px;
+  justify-content: center;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 8px;
+  padding: 0 10px;
+}
+
+.topbar-actions button {
+  min-width: 74px;
+  padding: 0 11px;
+}
+
+.topbar-actions .selected {
+  color: #1d1b16;
+  background: #e0b942;
+}
+
+.editor-surface {
+  position: relative;
+  min-height: 0;
+  flex: 1;
+}
+
+.welcome {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 30px;
+  color: #d7d0c4;
+  text-align: center;
+}
+
+.welcome h1 {
+  margin: 0;
+  color: #f2d169;
+  font-size: 32px;
+  line-height: 1.1;
+}
+
+.welcome p {
+  max-width: 420px;
+  margin: 0;
+  color: #aaa197;
+  line-height: 1.5;
+}
+
+.welcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.statusbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto minmax(120px, auto);
+  gap: 16px;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border-top: 1px solid #303030;
+  color: #bdb7ad;
+  background: #24211d;
+  font-size: 12px;
+}
+
+.statusbar span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drop-overlay {
+  position: fixed;
+  inset: 16px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #e0b942;
+  border-radius: 8px;
+  color: #ffeaa0;
+  background: rgb(16 16 16 / 0.84);
+  font-size: 18px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 26px;
+  background: rgb(0 0 0 / 0.66);
+}
+
+.tip-modal {
+  position: relative;
+  width: min(440px, 100%);
+  padding: 24px;
+  border: 1px solid #3b352b;
+  border-radius: 8px;
+  background: #1e1d1b;
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.42);
+  text-align: center;
+}
+
+.tip-modal h2 {
+  margin: 0;
+  color: #f2d169;
+  font-size: 24px;
+}
+
+.tip-modal p {
+  margin: 8px 0 18px;
+  color: #d7d0c4;
+}
+
+.tip-modal img {
+  display: block;
+  width: 100%;
+  max-height: 560px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+}
+
+@media (max-width: 760px) {
+  .sidebar {
+    display: none;
+  }
+
+  .topbar {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .topbar-actions {
+    border-top: 1px solid #303030;
+    padding: 7px 10px;
+  }
+
+  .statusbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .statusbar span:nth-child(2),
+  .statusbar span:nth-child(4) {
+    display: none;
+  }
+}
