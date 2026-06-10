@@ -1,10 +1,10 @@
 {
-  "name": "codediff-studio",
+  "name": "text-reader",
   "version": "0.1.0",
-  "description": "A lightweight desktop code editor with file diff support.",
+  "description": "A Chinese desktop text reader and code diff editor.",
   "main": "./out/main/index.js",
   "type": "module",
-  "author": "CodeDiff Studio",
+  "author": "文本阅读器",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -37,11 +37,12 @@
     "vitest": "^2.1.8"
   },
   "build": {
-    "appId": "studio.codediff.app",
-    "productName": "CodeDiff Studio",
+    "appId": "com.jade.textreader",
+    "productName": "文本阅读器",
     "files": [
       "out/**/*",
-      "src/renderer/src/assets/support/**/*"
+      "src/renderer/src/assets/support/**/*",
+      "build/icon.png"
     ],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "directories": {
@@ -50,6 +51,7 @@
     },
     "mac": {
       "category": "public.app-category.developer-tools",
+      "icon": "build/icon.icns",
       "target": [
         "dmg",
         "zip"
@@ -57,12 +59,14 @@
       "identity": null
     },
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         "nsis",
         "zip"
       ]
     },
     "linux": {
+      "icon": "build/icon.png",
       "target": "AppImage",
       "category": "Development"
     }

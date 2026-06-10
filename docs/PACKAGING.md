@@ -1,4 +1,4 @@
-# CodeDiff Studio 打包操作文档
+# 文本阅读器打包操作文档
 
 ## 1. 环境准备
 
@@ -41,8 +41,8 @@ release/
 常见产物：
 
 ```text
-CodeDiff Studio-0.1.0-mac-universal.dmg
-CodeDiff Studio-0.1.0-mac-universal.zip
+文本阅读器-0.1.0-mac-universal.dmg
+文本阅读器-0.1.0-mac-universal.zip
 ```
 
 说明：
@@ -76,8 +76,8 @@ release/
 常见产物：
 
 ```text
-CodeDiff Studio-0.1.0-win-x64.exe
-CodeDiff Studio-0.1.0-win-x64.zip
+文本阅读器-0.1.0-win-x64.exe
+文本阅读器-0.1.0-win-x64.zip
 ```
 
 说明：

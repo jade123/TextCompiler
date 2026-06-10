@@ -183,8 +183,11 @@ button:disabled {
   font-size: 13px;
 }
 
-select {
+.panel-section select {
   width: 100%;
+}
+
+select {
   height: 32px;
   border: 1px solid #3a3a3a;
   border-radius: 6px;
@@ -256,6 +259,7 @@ select {
 
 .topbar-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
   padding: 0 10px;
 }
@@ -263,6 +267,19 @@ select {
 .topbar-actions button {
   min-width: 74px;
   padding: 0 11px;
+}
+
+.language-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #bdb7ad;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.language-select select {
+  width: 120px;
 }
 
 .topbar-actions .selected {

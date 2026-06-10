@@ -19,3 +19,10 @@ export type SaveFileAsRequest = {
   defaultName: string;
   content: string;
 };
+
+export type LanguageMode = {
+  id: string;
+  label: string;
+  monacoLanguage: string;
+  extensions: string[];
+};

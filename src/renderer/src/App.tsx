@@ -12,8 +12,9 @@ import {
   Search,
   X
 } from 'lucide-react';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppFile, DiffSession } from '@shared/types';
+import { getLanguageLabel, getMonacoLanguage, LANGUAGE_MODES } from '@shared/languages';
 import tipCodeUrl from './assets/support/wechat-tip.jpg';
 import {
   createUntitledFile,
@@ -21,16 +22,18 @@ import {
   markFileSaved,
   renameDiffSide,
   swapDiffSides,
+  updateFileLanguage,
   updateFileContent
 } from './core/fileModel';
+import { shouldShowTipPrompt } from './core/tipPrompt';
 
 type ViewMode = 'editor' | 'diff';
 
 const emptyDiff: DiffSession = {
   leftFileId: null,
   rightFileId: null,
-  leftTitle: 'Left file',
-  rightTitle: 'Right file'
+  leftTitle: '左侧文件',
+  rightTitle: '右侧文件'
 };
 
 export function App(): JSX.Element {
@@ -41,7 +44,7 @@ export function App(): JSX.Element {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isTipOpen, setIsTipOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [message, setMessage] = useState('Ready');
+  const [message, setMessage] = useState('就绪');
   const diffSessionRef = useRef(diffSession);
   diffSessionRef.current = diffSession;
 
@@ -49,6 +52,12 @@ export function App(): JSX.Element {
   const leftFile = files.find((file) => file.id === diffSession.leftFileId) ?? null;
   const rightFile = files.find((file) => file.id === diffSession.rightFileId) ?? null;
   const dirtyCount = files.filter((file) => file.dirty).length;
+
+  useEffect(() => {
+    if (shouldShowTipPrompt()) {
+      setIsTipOpen(true);
+    }
+  }, []);
 
   const appendFiles = useCallback((incoming: AppFile[]) => {
     if (incoming.length === 0) {
@@ -73,10 +82,10 @@ export function App(): JSX.Element {
       if (accepted[0]) {
         setActiveFileId(accepted[0].id);
         setViewMode('editor');
-        setMessage(`Opened ${accepted.length} file${accepted.length === 1 ? '' : 's'}`);
+        setMessage(`已打开 ${accepted.length} 个文件`);
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Could not open files');
+      setMessage(error instanceof Error ? error.message : '无法打开文件');
     }
   }, [appendFiles]);
 
@@ -85,7 +94,7 @@ export function App(): JSX.Element {
     setFiles((current) => [...current, file]);
     setActiveFileId(file.id);
     setViewMode('editor');
-    setMessage('Created untitled file');
+    setMessage('已新建未命名文件');
   }, [files.length]);
 
   const saveFile = useCallback(
@@ -99,13 +108,13 @@ export function App(): JSX.Element {
         if (file.path) {
           await window.desktop.saveFile(file.path, file.content);
           setFiles((current) => markFileSaved(current, file.id, file.content));
-          setMessage(`Saved ${file.name}`);
+          setMessage(`已保存 ${file.name}`);
           return;
         }
 
         const saved = await window.desktop.saveFileAs(file.name, file.content);
         if (!saved) {
-          setMessage('Save canceled');
+          setMessage('已取消保存');
           return;
         }
 
@@ -116,9 +125,9 @@ export function App(): JSX.Element {
           leftFileId: session.leftFileId === file.id ? saved.id : session.leftFileId,
           rightFileId: session.rightFileId === file.id ? saved.id : session.rightFileId
         }));
-        setMessage(`Saved ${saved.name}`);
+        setMessage(`已保存 ${saved.name}`);
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : 'Could not save file');
+        setMessage(error instanceof Error ? error.message : '无法保存文件');
       }
     },
     [activeFileId, files]
@@ -133,7 +142,7 @@ export function App(): JSX.Element {
   const closeFile = useCallback(
     (fileId: string) => {
       const file = files.find((item) => item.id === fileId);
-      if (file?.dirty && !window.confirm(`${file.name} has unsaved changes. Close anyway?`)) {
+      if (file?.dirty && !window.confirm(`${file.name} 有未保存的修改，确定关闭吗？`)) {
         return;
       }
 
@@ -158,6 +167,11 @@ export function App(): JSX.Element {
     }
 
     setFiles((current) => updateFileContent(current, fileId, content));
+  }, []);
+
+  const updateLanguage = useCallback((fileId: string, language: string) => {
+    setFiles((current) => updateFileLanguage(current, fileId, language));
+    setMessage(`语言模式已切换为 ${getLanguageLabel(language)}`);
   }, []);
 
   const selectDiffFile = useCallback((side: 'left' | 'right', fileId: string) => {
@@ -200,17 +214,17 @@ export function App(): JSX.Element {
           });
           setActiveFileId(accepted[1].id);
           setViewMode('diff');
-          setMessage('Opened dropped files in diff view');
+          setMessage('已用差异对比打开拖入的文件');
           return;
         }
 
         if (accepted[0]) {
           setActiveFileId(accepted[0].id);
           setViewMode('editor');
-          setMessage(`Opened ${accepted[0].name}`);
+          setMessage(`已打开 ${accepted[0].name}`);
         }
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : 'Could not read dropped files');
+        setMessage(error instanceof Error ? error.message : '无法读取拖入的文件');
       }
     },
     [appendFiles]
@@ -269,23 +283,23 @@ export function App(): JSX.Element {
       onDrop={handleDrop}
     >
       <aside className={`activity-bar ${isSidebarOpen ? 'open' : ''}`}>
-        <button title="New file" onClick={createFile}>
+        <button title="新建文件" onClick={createFile}>
           <FilePlus2 size={19} />
         </button>
-        <button title="Open files" onClick={openFiles}>
+        <button title="打开文件" onClick={openFiles}>
           <FolderOpen size={19} />
         </button>
-        <button title="Save active file" onClick={() => saveFile()}>
+        <button title="保存当前文件" onClick={() => saveFile()}>
           <Save size={19} />
         </button>
-        <button title="Diff view" onClick={() => setViewMode('diff')}>
+        <button title="差异对比" onClick={() => setViewMode('diff')}>
           <Diff size={19} />
         </button>
-        <button title="Support development" onClick={() => setIsTipOpen(true)}>
+        <button title="支持开发" onClick={() => setIsTipOpen(true)}>
           <Gift size={19} />
         </button>
         <span className="activity-spacer" />
-        <button title="Toggle sidebar" onClick={() => setIsSidebarOpen((value) => !value)}>
+        <button title="显示或隐藏侧边栏" onClick={() => setIsSidebarOpen((value) => !value)}>
           {isSidebarOpen ? <PanelLeftClose size={19} /> : <PanelLeftOpen size={19} />}
         </button>
       </aside>
@@ -294,20 +308,20 @@ export function App(): JSX.Element {
         <aside className="sidebar">
           <div className="sidebar-header">
             <Code2 size={17} />
-            <span>CodeDiff Studio</span>
+            <span>文本阅读器</span>
           </div>
           <div className="quick-actions">
             <button onClick={openFiles}>
               <FolderOpen size={16} />
-              Open
+              打开
             </button>
             <button onClick={() => saveFile()} disabled={!activeFile}>
               <Save size={16} />
-              Save
+              保存
             </button>
           </div>
           <section className="panel-section">
-            <div className="panel-title">Files</div>
+            <div className="panel-title">文件</div>
             <div className="file-list">
               {files.map((file) => (
                 <button
@@ -319,18 +333,18 @@ export function App(): JSX.Element {
                   }}
                 >
                   <span className="file-name">{file.name}</span>
-                  <span className="file-meta">{file.dirty ? 'modified' : file.language}</span>
+                  <span className="file-meta">{file.dirty ? '已修改' : getLanguageLabel(file.language)}</span>
                 </button>
               ))}
-              {files.length === 0 && <div className="empty-note">Drop files here or open from disk.</div>}
+              {files.length === 0 && <div className="empty-note">拖入文件，或从磁盘打开文件。</div>}
             </div>
           </section>
           <section className="panel-section">
-            <div className="panel-title">Diff</div>
+            <div className="panel-title">差异对比</div>
             <label>
-              Left
+              左侧文件
               <select value={diffSession.leftFileId ?? ''} onChange={(event) => selectDiffFile('left', event.target.value)}>
-                <option value="">Choose file</option>
+                <option value="">选择文件</option>
                 {files.map((file) => (
                   <option key={file.id} value={file.id}>
                     {file.name}
@@ -339,9 +353,9 @@ export function App(): JSX.Element {
               </select>
             </label>
             <label>
-              Right
+              右侧文件
               <select value={diffSession.rightFileId ?? ''} onChange={(event) => selectDiffFile('right', event.target.value)}>
-                <option value="">Choose file</option>
+                <option value="">选择文件</option>
                 {files.map((file) => (
                   <option key={file.id} value={file.id}>
                     {file.name}
@@ -351,10 +365,10 @@ export function App(): JSX.Element {
             </label>
             <div className="diff-actions">
               <button onClick={() => useActiveForDiff('left')} disabled={!activeFile}>
-                Set left
+                设置左侧
               </button>
               <button onClick={() => useActiveForDiff('right')} disabled={!activeFile}>
-                Set right
+                设置右侧
               </button>
               <button onClick={() => setDiffSession((session) => swapDiffSides(session))} disabled={!leftFile && !rightFile}>
                 <ArrowLeftRight size={15} />
@@ -386,16 +400,30 @@ export function App(): JSX.Element {
                 />
               </button>
             ))}
-            <button className="tab utility" title="Search is available inside Monaco with Ctrl/Cmd+F">
+            <button className="tab utility" title="可在编辑器内使用 Ctrl/Cmd+F 搜索">
               <Search size={15} />
             </button>
           </div>
           <div className="topbar-actions">
+            <label className="language-select">
+              <span>语言模式</span>
+              <select
+                value={activeFile?.language ?? 'plaintext'}
+                onChange={(event) => activeFile && updateLanguage(activeFile.id, event.target.value)}
+                disabled={!activeFile}
+              >
+                {LANGUAGE_MODES.map((mode) => (
+                  <option key={mode.id} value={mode.id}>
+                    {mode.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <button onClick={saveAll} disabled={dirtyCount === 0}>
-              Save all
+              保存全部
             </button>
             <button className={viewMode === 'diff' ? 'selected' : ''} onClick={() => setViewMode('diff')}>
-              Diff
+              差异对比
             </button>
           </div>
         </div>
@@ -405,7 +433,7 @@ export function App(): JSX.Element {
             <Editor
               key={activeFile.id}
               theme="vs-dark"
-              language={activeFile.language || detectLanguage(activeFile.name)}
+              language={getMonacoLanguage(activeFile.language || detectLanguage(activeFile.name))}
               value={activeFile.content}
               options={editorOptions}
               onChange={(value) => updateContent(activeFile.id, value)}
@@ -415,16 +443,16 @@ export function App(): JSX.Element {
           {viewMode === 'editor' && !activeFile && (
             <div className="welcome">
               <Code2 size={42} />
-              <h1>CodeDiff Studio</h1>
-              <p>Open, edit, and compare source files from your desktop.</p>
+              <h1>文本阅读器</h1>
+              <p>从桌面打开、编辑并对比文本和代码文件。</p>
               <div className="welcome-actions">
                 <button onClick={openFiles}>
                   <FolderOpen size={17} />
-                  Open files
+                  打开文件
                 </button>
                 <button onClick={createFile}>
                   <FilePlus2 size={17} />
-                  New file
+                  新建文件
                 </button>
               </div>
             </div>
@@ -434,7 +462,7 @@ export function App(): JSX.Element {
             <DiffEditor
               key={`${leftFile.id}:${rightFile.id}`}
               theme="vs-dark"
-              language={rightFile.language || leftFile.language}
+              language={getMonacoLanguage(rightFile.language || leftFile.language)}
               original={leftFile.content}
               modified={rightFile.content}
               options={{
@@ -450,26 +478,26 @@ export function App(): JSX.Element {
           {viewMode === 'diff' && (!leftFile || !rightFile) && (
             <div className="welcome">
               <Diff size={42} />
-              <h1>Select two files</h1>
-              <p>Use the Diff panel or drop two files into the window.</p>
+              <h1>选择两个文件</h1>
+              <p>使用左侧差异面板，或直接拖入两个文件。</p>
             </div>
           )}
         </section>
 
         <footer className="statusbar">
-          <span>{activeFile?.path ?? activeFile?.name ?? 'No file selected'}</span>
-          <span>{activeFile?.language ?? 'plaintext'}</span>
-          <span>{dirtyCount > 0 ? `${dirtyCount} unsaved` : 'Saved'}</span>
+          <span>{activeFile?.path ?? activeFile?.name ?? '未选择文件'}</span>
+          <span>{activeFile ? getLanguageLabel(activeFile.language) : '纯文本'}</span>
+          <span>{dirtyCount > 0 ? `${dirtyCount} 个未保存` : '已保存'}</span>
           <span>{message}</span>
         </footer>
       </main>
 
-      {isDragging && <div className="drop-overlay">Drop one file to edit, or two files to compare.</div>}
+      {isDragging && <div className="drop-overlay">拖入一个文件进行编辑，或拖入两个文件进行对比。</div>}
 
       {isTipOpen && (
         <div className="modal-backdrop" role="dialog" aria-modal="true">
           <div className="tip-modal">
-            <button className="modal-close" title="Close" onClick={() => setIsTipOpen(false)}>
+            <button className="modal-close" title="关闭" onClick={() => setIsTipOpen(false)}>
               <X size={18} />
             </button>
             <h2>支持开发</h2>

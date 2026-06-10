@@ -1,42 +1,12 @@
-import type { AppFile, DiffSession } from '@shared/types';
-
-const languageByExtension: Record<string, string> = {
-  js: 'javascript',
-  jsx: 'javascript',
-  ts: 'typescript',
-  tsx: 'typescript',
-  json: 'json',
-  md: 'markdown',
-  css: 'css',
-  scss: 'scss',
-  html: 'html',
-  xml: 'xml',
-  py: 'python',
-  rb: 'ruby',
-  go: 'go',
-  rs: 'rust',
-  java: 'java',
-  c: 'c',
-  h: 'c',
-  cpp: 'cpp',
-  hpp: 'cpp',
-  cs: 'csharp',
-  php: 'php',
-  sql: 'sql',
-  yml: 'yaml',
-  yaml: 'yaml',
-  sh: 'shell',
-  zsh: 'shell',
-  txt: 'plaintext'
-};
+import type { AppFile, DiffSession } from '../../../shared/types';
+import { detectLanguageMode } from '../../../shared/languages';
 
 export function detectLanguage(name: string): string {
-  const extension = name.split('.').pop()?.toLowerCase();
-  return extension ? languageByExtension[extension] ?? 'plaintext' : 'plaintext';
+  return detectLanguageMode(name);
 }
 
 export function createUntitledFile(index: number): AppFile {
-  const name = `untitled-${index}.txt`;
+  const name = `未命名-${index}.txt`;
   return {
     id: `untitled:${index}:${Date.now()}`,
     name,
@@ -58,6 +28,10 @@ export function updateFileContent(files: AppFile[], fileId: string, content: str
         }
       : file
   );
+}
+
+export function updateFileLanguage(files: AppFile[], fileId: string, language: string): AppFile[] {
+  return files.map((file) => (file.id === fileId ? { ...file, language } : file));
 }
 
 export function markFileSaved(files: AppFile[], fileId: string, content: string): AppFile[] {
@@ -87,13 +61,13 @@ export function renameDiffSide(session: DiffSession, side: 'left' | 'right', fil
     return {
       ...session,
       leftFileId: file?.id ?? null,
-      leftTitle: file?.name ?? 'Left file'
+      leftTitle: file?.name ?? '左侧文件'
     };
   }
 
   return {
     ...session,
     rightFileId: file?.id ?? null,
-    rightTitle: file?.name ?? 'Right file'
+    rightTitle: file?.name ?? '右侧文件'
   };
 }

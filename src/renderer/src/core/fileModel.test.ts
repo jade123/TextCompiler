@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { AppFile, DiffSession } from '@shared/types';
-import { detectLanguage, markFileSaved, swapDiffSides, updateFileContent } from './fileModel';
+import type { AppFile, DiffSession } from '../../../shared/types';
+import { detectLanguage, markFileSaved, swapDiffSides, updateFileContent, updateFileLanguage } from './fileModel';
 
 function fixtureFile(overrides: Partial<AppFile> = {}): AppFile {
   return {
@@ -18,6 +18,9 @@ function fixtureFile(overrides: Partial<AppFile> = {}): AppFile {
 describe('file model', () => {
   it('detects common languages by extension', () => {
     expect(detectLanguage('app.tsx')).toBe('typescript');
+    expect(detectLanguage('schema.sql')).toBe('mysql');
+    expect(detectLanguage('Main.java')).toBe('java');
+    expect(detectLanguage('index.php')).toBe('php');
     expect(detectLanguage('package.json')).toBe('json');
     expect(detectLanguage('README.md')).toBe('markdown');
     expect(detectLanguage('unknown.asset')).toBe('plaintext');
@@ -27,6 +30,13 @@ describe('file model', () => {
     const [file] = updateFileContent([fixtureFile()], 'a', 'const a = 2;');
     expect(file.dirty).toBe(true);
     expect(file.content).toBe('const a = 2;');
+  });
+
+  it('updates language mode without changing content', () => {
+    const [file] = updateFileLanguage([fixtureFile()], 'a', 'mysql');
+    expect(file.language).toBe('mysql');
+    expect(file.content).toBe('const a = 1;');
+    expect(file.dirty).toBe(false);
   });
 
   it('clears dirty state when a file is saved', () => {

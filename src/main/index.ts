@@ -3,43 +3,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AppFile, SaveFileAsRequest } from '../shared/types';
+import { detectLanguageMode, LANGUAGE_MODES } from '../shared/languages';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = Boolean(process.env.ELECTRON_RENDERER_URL);
-
-const languageByExtension: Record<string, string> = {
-  '.js': 'javascript',
-  '.jsx': 'javascript',
-  '.ts': 'typescript',
-  '.tsx': 'typescript',
-  '.json': 'json',
-  '.md': 'markdown',
-  '.css': 'css',
-  '.scss': 'scss',
-  '.html': 'html',
-  '.xml': 'xml',
-  '.py': 'python',
-  '.rb': 'ruby',
-  '.go': 'go',
-  '.rs': 'rust',
-  '.java': 'java',
-  '.c': 'c',
-  '.h': 'c',
-  '.cpp': 'cpp',
-  '.hpp': 'cpp',
-  '.cs': 'csharp',
-  '.php': 'php',
-  '.sql': 'sql',
-  '.yml': 'yaml',
-  '.yaml': 'yaml',
-  '.sh': 'shell',
-  '.zsh': 'shell',
-  '.txt': 'plaintext'
-};
-
-function detectLanguage(filePath: string): string {
-  return languageByExtension[path.extname(filePath).toLowerCase()] ?? 'plaintext';
-}
 
 async function readAppFile(filePath: string): Promise<AppFile> {
   const content = await fs.readFile(filePath, 'utf8');
@@ -48,7 +15,7 @@ async function readAppFile(filePath: string): Promise<AppFile> {
     name: path.basename(filePath),
     path: filePath,
     content,
-    language: detectLanguage(filePath),
+    language: detectLanguageMode(filePath),
     dirty: false,
     lastSavedContent: content
   };
@@ -60,8 +27,9 @@ function createWindow(): void {
     height: 860,
     minWidth: 960,
     minHeight: 640,
-    title: 'CodeDiff Studio',
+    title: '文本阅读器',
     backgroundColor: '#151515',
+    icon: path.join(app.getAppPath(), 'build/icon.png'),
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.mjs'),
       contextIsolation: true,
@@ -96,11 +64,11 @@ app.on('window-all-closed', () => {
 
 ipcMain.handle('files:open', async () => {
   const result = await dialog.showOpenDialog({
-    title: 'Open files',
+    title: '打开文件',
     properties: ['openFile', 'multiSelections'],
     filters: [
-      { name: 'Code and Text', extensions: ['js', 'jsx', 'ts', 'tsx', 'json', 'md', 'css', 'html', 'py', 'go', 'rs', 'java', 'txt'] },
-      { name: 'All Files', extensions: ['*'] }
+      { name: '文本和代码', extensions: Array.from(new Set(LANGUAGE_MODES.flatMap((mode) => mode.extensions))) },
+      { name: '所有文件', extensions: ['*'] }
     ]
   });
 
@@ -121,7 +89,7 @@ ipcMain.handle('files:save', async (_event, filePath: string, content: string) =
 
 ipcMain.handle('files:save-as', async (_event, request: SaveFileAsRequest) => {
   const result = await dialog.showSaveDialog({
-    title: 'Save file as',
+    title: '另存为',
     defaultPath: request.defaultName
   });
 
