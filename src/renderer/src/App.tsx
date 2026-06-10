@@ -13,8 +13,8 @@ import {
   X
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { AppFile, DiffSession } from '@shared/types';
-import { getLanguageLabel, getMonacoLanguage, LANGUAGE_MODES } from '@shared/languages';
+import type { AppFile, DiffSession } from '../../shared/types';
+import { getLanguageLabel, getMonacoLanguage, LANGUAGE_MODES } from '../../shared/languages';
 import tipCodeUrl from './assets/support/wechat-tip.jpg';
 import {
   createUntitledFile,

@@ -12,7 +12,7 @@ npm -v
 安装项目依赖：
 
 ```bash
-npm install
+npm ci
 ```
 
 建议先跑测试和基础构建：
@@ -64,6 +64,9 @@ npm run pack:mac:universal
 在 Windows 机器上执行：
 
 ```bash
+npm ci
+npm test
+npm run build
 npm run dist:win
 ```
 
@@ -85,6 +88,7 @@ release/
 - `.exe` 是 NSIS 安装包。
 - `.zip` 是免安装压缩包。
 - 当前配置生成 Windows x64 版本。
+- 不要使用 `npm install --omit=dev`，打包需要 TypeScript、Vite、Electron Builder 等开发依赖。
 - 如需正式发布，建议配置 Windows 代码签名证书，避免 SmartScreen 提示。
 
 ## 4. 跨平台打包注意事项
@@ -102,10 +106,24 @@ release/
 依赖下载超时：
 
 ```bash
-npm install
+npm ci
 ```
 
 如果网络不稳定，换网络或配置 npm registry 后重试。
+
+Windows 上出现 `TS2688: Cannot find type definition file for 'vite/client'` 或 `TS5101: Option 'baseUrl' is deprecated`：
+
+- 拉取最新代码后重新执行 `npm ci`。
+- 当前项目已移除 `tsconfig.json` 中的 `vite/client` 类型入口和 `baseUrl` 路径别名。
+- 如果仍看到旧错误，删除本地旧依赖和构建产物后重新安装：
+
+```bash
+rmdir /s /q node_modules
+rmdir /s /q out
+rmdir /s /q release
+npm ci
+npm run build
+```
 
 macOS 打开提示不安全：
 
